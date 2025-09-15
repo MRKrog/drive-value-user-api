@@ -17,11 +17,12 @@ git push origin main
 4. Select your repository
 5. Add environment variables:
    ```
-   CLAUDE_API_KEY=sk-ant-api03-your-key-here
-   GROK_API_KEY=your-grok-api-key-here (optional)
-   AUTO_DEV_API_KEY=your-auto-dev-key-here
-   AI_SERVICE=claude (or grok)
-   PORT=3001
+   PORT=3002
+   MONGODB_URI=mongodb://localhost:27017/drivevalue
+   GOOGLE_CLIENT_ID=your-google-client-id
+   GOOGLE_CLIENT_SECRET=your-google-client-secret
+   JWT_SECRET=your-jwt-secret
+   JWT_EXPIRES_IN=7d
    NODE_ENV=production
    ```
 6. Deploy!
