@@ -124,9 +124,7 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Indexes for performance
-userSchema.index({ email: 1 });
-userSchema.index({ googleId: 1 });
+// Indexes are defined in the schema fields above, no need for duplicate definitions
 
 // Instance Methods
 userSchema.methods.updateLastLogin = function() {
