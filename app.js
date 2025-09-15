@@ -19,7 +19,25 @@ app.use(helmet());
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Get allowed origins from environment variable
+    const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+      .split(',')
+      .map(origin => origin.trim());
+    
+    console.log(`🌐 CORS Check - Origin: ${origin}, Allowed: [${allowedOrigins.join(', ')}]`);
+    
+    if (allowedOrigins.includes(origin)) {
+      console.log(`✅ CORS Allowed: ${origin}`);
+      callback(null, true);
+    } else {
+      console.log(`❌ CORS Blocked: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
 };
