@@ -90,10 +90,29 @@ Authenticate user with Google OAuth token.
     "user": {
       "id": "user_id",
       "email": "user@example.com",
-      "name": "John Doe",
-      "firstName": "John",
-      "lastName": "Doe",
-      "profilePicture": "https://...",
+      "profile": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "name": "John Doe",
+        "avatar": "https://...",
+        "city": "New York",
+        "state": "NY"
+      },
+      "preferences": {
+        "theme": "dark",
+        "currency": "USD",
+        "units": "imperial"
+      },
+      "stats": {
+        "totalSearches": 0
+      },
+      "subscription": {
+        "plan": "free",
+        "status": "active",
+        "price": 0,
+        "nextBilling": null,
+        "trialEnds": null
+      },
       "role": "user",
       "lastLogin": "2024-01-01T00:00:00.000Z",
       "createdAt": "2024-01-01T00:00:00.000Z",
@@ -121,10 +140,29 @@ Authorization: Bearer <jwt-token>
     "user": {
       "id": "user_id",
       "email": "user@example.com",
-      "name": "John Doe",
-      "firstName": "John",
-      "lastName": "Doe",
-      "profilePicture": "https://...",
+      "profile": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "name": "John Doe",
+        "avatar": "https://...",
+        "city": "New York",
+        "state": "NY"
+      },
+      "preferences": {
+        "theme": "dark",
+        "currency": "USD",
+        "units": "imperial"
+      },
+      "stats": {
+        "totalSearches": 0
+      },
+      "subscription": {
+        "plan": "free",
+        "status": "active",
+        "price": 0,
+        "nextBilling": null,
+        "trialEnds": null
+      },
       "role": "user",
       "lastLogin": "2024-01-01T00:00:00.000Z",
       "createdAt": "2024-01-01T00:00:00.000Z",
@@ -187,7 +225,11 @@ Authorization: Bearer <jwt-token>
     "user": {
       "id": "user_id",
       "email": "user@example.com",
-      "name": "John Doe",
+      "profile": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "name": "John Doe"
+      },
       "role": "user"
     }
   }
@@ -212,10 +254,29 @@ Authorization: Bearer <jwt-token>
     "user": {
       "id": "user_id",
       "email": "user@example.com",
-      "name": "John Doe",
-      "firstName": "John",
-      "lastName": "Doe",
-      "profilePicture": "https://...",
+      "profile": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "name": "John Doe",
+        "avatar": "https://...",
+        "city": "New York",
+        "state": "NY"
+      },
+      "preferences": {
+        "theme": "dark",
+        "currency": "USD",
+        "units": "imperial"
+      },
+      "stats": {
+        "totalSearches": 0
+      },
+      "subscription": {
+        "plan": "free",
+        "status": "active",
+        "price": 0,
+        "nextBilling": null,
+        "trialEnds": null
+      },
       "role": "user",
       "lastLogin": "2024-01-01T00:00:00.000Z",
       "createdAt": "2024-01-01T00:00:00.000Z",
@@ -236,10 +297,19 @@ Authorization: Bearer <jwt-token>
 **Request Body:**
 ```json
 {
-  "name": "John Smith",
-  "firstName": "John",
-  "lastName": "Smith",
-  "profilePicture": "https://new-profile-picture.com/image.jpg"
+  "profile": {
+    "name": "John Smith",
+    "firstName": "John",
+    "lastName": "Smith",
+    "avatar": "https://new-profile-picture.com/image.jpg",
+    "city": "San Francisco",
+    "state": "CA"
+  },
+  "preferences": {
+    "theme": "dark",
+    "currency": "USD",
+    "units": "imperial"
+  }
 }
 ```
 
@@ -252,14 +322,96 @@ Authorization: Bearer <jwt-token>
     "user": {
       "id": "user_id",
       "email": "user@example.com",
-      "name": "John Smith",
-      "firstName": "John",
-      "lastName": "Smith",
-      "profilePicture": "https://new-profile-picture.com/image.jpg",
+      "profile": {
+        "firstName": "John",
+        "lastName": "Smith",
+        "name": "John Smith",
+        "avatar": "https://new-profile-picture.com/image.jpg",
+        "city": "San Francisco",
+        "state": "CA"
+      },
+      "preferences": {
+        "theme": "dark",
+        "currency": "USD",
+        "units": "imperial"
+      },
+      "stats": {
+        "totalSearches": 0
+      },
+      "subscription": {
+        "plan": "free",
+        "status": "active",
+        "price": 0,
+        "nextBilling": null,
+        "trialEnds": null
+      },
       "role": "user",
       "lastLogin": "2024-01-01T00:00:00.000Z",
       "createdAt": "2024-01-01T00:00:00.000Z",
       "updatedAt": "2024-01-01T00:00:00.000Z"
+    }
+  }
+}
+```
+
+#### PUT /api/users/stats
+Update user statistics.
+
+**Headers:**
+```
+Authorization: Bearer <jwt-token>
+```
+
+**Request Body:**
+```json
+{
+  "totalSearches": 5
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Stats updated successfully",
+  "data": {
+    "stats": {
+      "totalSearches": 5
+    }
+  }
+}
+```
+
+#### PUT /api/users/subscription
+Update user subscription.
+
+**Headers:**
+```
+Authorization: Bearer <jwt-token>
+```
+
+**Request Body:**
+```json
+{
+  "plan": "premium",
+  "status": "active",
+  "price": 29.99,
+  "nextBilling": "2024-02-01T00:00:00.000Z"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Subscription updated successfully",
+  "data": {
+    "subscription": {
+      "plan": "premium",
+      "status": "active",
+      "price": 29.99,
+      "nextBilling": "2024-02-01T00:00:00.000Z",
+      "trialEnds": null
     }
   }
 }
@@ -314,10 +466,29 @@ Authorization: Bearer <admin-jwt-token>
     "user": {
       "id": "user_id",
       "email": "user@example.com",
-      "name": "John Doe",
-      "firstName": "John",
-      "lastName": "Doe",
-      "profilePicture": "https://...",
+      "profile": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "name": "John Doe",
+        "avatar": "https://...",
+        "city": "New York",
+        "state": "NY"
+      },
+      "preferences": {
+        "theme": "dark",
+        "currency": "USD",
+        "units": "imperial"
+      },
+      "stats": {
+        "totalSearches": 0
+      },
+      "subscription": {
+        "plan": "free",
+        "status": "active",
+        "price": 0,
+        "nextBilling": null,
+        "trialEnds": null
+      },
       "role": "user",
       "lastLogin": "2024-01-01T00:00:00.000Z",
       "createdAt": "2024-01-01T00:00:00.000Z",
@@ -351,7 +522,11 @@ Authorization: Bearer <admin-jwt-token>
     "user": {
       "id": "user_id",
       "email": "user@example.com",
-      "name": "John Doe",
+      "profile": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "name": "John Doe"
+      },
       "role": "admin"
     }
   }
@@ -379,12 +554,42 @@ Authorization: Bearer <admin-jwt-token>
 ### User Model
 ```javascript
 {
+  // OAuth Authentication
   googleId: String (required, unique),
   email: String (required, unique),
-  name: String (required),
-  firstName: String,
-  lastName: String,
-  profilePicture: String,
+  
+  // Profile Information
+  profile: {
+    firstName: String,
+    lastName: String,
+    name: String (required),
+    avatar: String,
+    city: String,
+    state: String
+  },
+  
+  // User Preferences
+  preferences: {
+    theme: String (enum: ['light', 'dark', 'auto'], default: 'dark'),
+    currency: String (enum: ['USD', 'EUR', 'GBP', 'CAD'], default: 'USD'),
+    units: String (enum: ['imperial', 'metric'], default: 'imperial')
+  },
+  
+  // User Statistics
+  stats: {
+    totalSearches: Number (default: 0)
+  },
+  
+  // Subscription Information
+  subscription: {
+    plan: String (enum: ['free', 'premium', 'enterprise'], default: 'free'),
+    status: String (enum: ['active', 'inactive', 'cancelled', 'trial'], default: 'active'),
+    price: Number (default: 0),
+    nextBilling: Date,
+    trialEnds: Date
+  },
+  
+  // System Fields
   authProvider: String (default: 'google'),
   role: String (default: 'user', enum: ['user', 'admin']),
   lastLogin: Date,
@@ -488,7 +693,8 @@ src/
     ├── googleAuth.js         # Google OAuth utilities
     └── jwt.js                # JWT utilities
 app.js                        # Main application setup
-server.js                     # Server entry point
+test-api.js                   # API testing script
+API_DOCUMENTATION.md          # Complete API documentation
 ```
 
 ## 🚀 Deployment

@@ -36,10 +36,10 @@ const googleAuth = asyncHandler(async (req, res) => {
         user: {
           id: user._id,
           email: user.email,
-          name: user.name,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          profilePicture: user.profilePicture,
+          profile: user.profile,
+          preferences: user.preferences,
+          stats: user.stats,
+          subscription: user.subscription,
           role: user.role,
           lastLogin: user.lastLogin,
           createdAt: user.createdAt,
@@ -77,10 +77,10 @@ const getMe = asyncHandler(async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        name: user.name,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profilePicture: user.profilePicture,
+        profile: user.profile,
+        preferences: user.preferences,
+        stats: user.stats,
+        subscription: user.subscription,
         role: user.role,
         lastLogin: user.lastLogin,
         createdAt: user.createdAt,
@@ -141,7 +141,7 @@ const verifyToken = asyncHandler(async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        name: user.name,
+        profile: user.profile,
         role: user.role
       }
     }

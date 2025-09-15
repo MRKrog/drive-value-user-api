@@ -15,10 +15,10 @@ const getUserProfile = asyncHandler(async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        name: user.name,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profilePicture: user.profilePicture,
+        profile: user.profile,
+        preferences: user.preferences,
+        stats: user.stats,
+        subscription: user.subscription,
         role: user.role,
         lastLogin: user.lastLogin,
         createdAt: user.createdAt,
@@ -35,55 +35,88 @@ const getUserProfile = asyncHandler(async (req, res) => {
  */
 const updateUserProfile = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const { name, firstName, lastName, profilePicture } = req.body;
+  const { profile, preferences } = req.body;
 
-  // Validate input
+  // Validate and prepare update data
   const updateData = {};
   
-  if (name !== undefined) {
-    if (typeof name !== 'string' || name.trim().length === 0) {
+  // Update profile data
+  if (profile) {
+    if (profile.name && (typeof profile.name !== 'string' || profile.name.trim().length === 0)) {
       return res.status(400).json({
         error: 'Validation Error',
         message: 'Name must be a non-empty string'
       });
     }
-    updateData.name = name.trim();
-  }
-
-  if (firstName !== undefined) {
-    if (typeof firstName !== 'string') {
+    
+    if (profile.firstName && typeof profile.firstName !== 'string') {
       return res.status(400).json({
         error: 'Validation Error',
         message: 'First name must be a string'
       });
     }
-    updateData.firstName = firstName.trim();
-  }
-
-  if (lastName !== undefined) {
-    if (typeof lastName !== 'string') {
+    
+    if (profile.lastName && typeof profile.lastName !== 'string') {
       return res.status(400).json({
         error: 'Validation Error',
         message: 'Last name must be a string'
       });
     }
-    updateData.lastName = lastName.trim();
-  }
-
-  if (profilePicture !== undefined) {
-    if (typeof profilePicture !== 'string') {
+    
+    if (profile.avatar && typeof profile.avatar !== 'string') {
       return res.status(400).json({
         error: 'Validation Error',
-        message: 'Profile picture must be a string (URL)'
+        message: 'Avatar must be a string (URL)'
       });
     }
-    updateData.profilePicture = profilePicture.trim();
+    
+    if (profile.city && typeof profile.city !== 'string') {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'City must be a string'
+      });
+    }
+    
+    if (profile.state && typeof profile.state !== 'string') {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'State must be a string'
+      });
+    }
+    
+    updateData.profile = profile;
+  }
+
+  // Update preferences data
+  if (preferences) {
+    if (preferences.theme && !['light', 'dark', 'auto'].includes(preferences.theme)) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Theme must be one of: light, dark, auto'
+      });
+    }
+    
+    if (preferences.currency && !['USD', 'EUR', 'GBP', 'CAD'].includes(preferences.currency)) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Currency must be one of: USD, EUR, GBP, CAD'
+      });
+    }
+    
+    if (preferences.units && !['imperial', 'metric'].includes(preferences.units)) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Units must be one of: imperial, metric'
+      });
+    }
+    
+    updateData.preferences = preferences;
   }
 
   // Update user
   const updatedUser = await User.findByIdAndUpdate(
     userId,
-    updateData,
+    { $set: updateData },
     { 
       new: true, 
       runValidators: true,
@@ -105,15 +138,128 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       user: {
         id: updatedUser._id,
         email: updatedUser.email,
-        name: updatedUser.name,
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        profilePicture: updatedUser.profilePicture,
+        profile: updatedUser.profile,
+        preferences: updatedUser.preferences,
+        stats: updatedUser.stats,
+        subscription: updatedUser.subscription,
         role: updatedUser.role,
         lastLogin: updatedUser.lastLogin,
         createdAt: updatedUser.createdAt,
         updatedAt: updatedUser.updatedAt
       }
+    }
+  });
+});
+
+/**
+ * @desc    Update user stats (e.g., increment search count)
+ * @route   PUT /api/users/stats
+ * @access  Private
+ */
+const updateUserStats = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { totalSearches } = req.body;
+
+  const updateData = {};
+  
+  if (totalSearches !== undefined) {
+    if (typeof totalSearches !== 'number' || totalSearches < 0) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Total searches must be a non-negative number'
+      });
+    }
+    updateData['stats.totalSearches'] = totalSearches;
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: updateData },
+    { 
+      new: true, 
+      runValidators: true,
+      select: '-__v'
+    }
+  );
+
+  if (!updatedUser) {
+    return res.status(404).json({
+      error: 'Not Found',
+      message: 'User not found'
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Stats updated successfully',
+    data: {
+      stats: updatedUser.stats
+    }
+  });
+});
+
+/**
+ * @desc    Update user subscription
+ * @route   PUT /api/users/subscription
+ * @access  Private
+ */
+const updateUserSubscription = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { plan, status, price, nextBilling, trialEnds } = req.body;
+
+  const updateData = {};
+  
+  if (plan && !['free', 'premium', 'enterprise'].includes(plan)) {
+    return res.status(400).json({
+      error: 'Validation Error',
+      message: 'Plan must be one of: free, premium, enterprise'
+    });
+  }
+  
+  if (status && !['active', 'inactive', 'cancelled', 'trial'].includes(status)) {
+    return res.status(400).json({
+      error: 'Validation Error',
+      message: 'Status must be one of: active, inactive, cancelled, trial'
+    });
+  }
+  
+  if (price !== undefined) {
+    if (typeof price !== 'number' || price < 0) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Price must be a non-negative number'
+      });
+    }
+    updateData['subscription.price'] = price;
+  }
+  
+  if (plan) updateData['subscription.plan'] = plan;
+  if (status) updateData['subscription.status'] = status;
+  if (nextBilling) updateData['subscription.nextBilling'] = new Date(nextBilling);
+  if (trialEnds) updateData['subscription.trialEnds'] = new Date(trialEnds);
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: updateData },
+    { 
+      new: true, 
+      runValidators: true,
+      select: '-__v'
+    }
+  );
+
+  if (!updatedUser) {
+    return res.status(404).json({
+      error: 'Not Found',
+      message: 'User not found'
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Subscription updated successfully',
+    data: {
+      subscription: updatedUser.subscription
     }
   });
 });
@@ -137,7 +283,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
   if (req.query.search) {
     query.$or = [
-      { name: { $regex: req.query.search, $options: 'i' } },
+      { 'profile.name': { $regex: req.query.search, $options: 'i' } },
       { email: { $regex: req.query.search, $options: 'i' } }
     ];
   }
@@ -190,10 +336,10 @@ const getUserById = asyncHandler(async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        name: user.name,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profilePicture: user.profilePicture,
+        profile: user.profile,
+        preferences: user.preferences,
+        stats: user.stats,
+        subscription: user.subscription,
         role: user.role,
         lastLogin: user.lastLogin,
         createdAt: user.createdAt,
@@ -239,7 +385,7 @@ const updateUserRole = asyncHandler(async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        name: user.name,
+        profile: user.profile,
         role: user.role
       }
     }
@@ -280,6 +426,8 @@ const deleteUser = asyncHandler(async (req, res) => {
 module.exports = {
   getUserProfile,
   updateUserProfile,
+  updateUserStats,
+  updateUserSubscription,
   getAllUsers,
   getUserById,
   updateUserRole,

@@ -3,6 +3,8 @@ const router = express.Router();
 const {
   getUserProfile,
   updateUserProfile,
+  updateUserStats,
+  updateUserSubscription,
   getAllUsers,
   getUserById,
   updateUserRole,
@@ -16,6 +18,8 @@ router.use(authenticateToken);
 // User profile routes
 router.get('/profile', getUserProfile);
 router.put('/profile', updateUserProfile);
+router.put('/stats', updateUserStats);
+router.put('/subscription', updateUserSubscription);
 
 // Admin routes
 router.get('/', requireRole('admin'), getAllUsers);

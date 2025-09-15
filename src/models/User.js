@@ -1,6 +1,8 @@
+// models/User.js - Updated Backend User Model (Simplified)
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
+  // OAuth Authentication
   googleId: {
     type: String,
     required: true,
@@ -13,23 +15,90 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true
   },
-  name: {
-    type: String,
-    required: true,
-    trim: true
+  
+  // Basic Profile (matches your Redux structure)
+  profile: {
+    firstName: {
+      type: String,
+      trim: true
+    },
+    lastName: {
+      type: String,
+      trim: true
+    },
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    avatar: {
+      type: String,
+      default: null
+    },
+    city: {
+      type: String,
+      default: null
+    },
+    state: {
+      type: String,
+      default: null
+    }
   },
-  firstName: {
-    type: String,
-    trim: true
+
+  // User Preferences (matches your Redux)
+  preferences: {
+    theme: {
+      type: String,
+      enum: ['light', 'dark', 'auto'],
+      default: 'dark'
+    },
+    currency: {
+      type: String,
+      enum: ['USD', 'EUR', 'GBP', 'CAD'],
+      default: 'USD'
+    },
+    units: {
+      type: String,
+      enum: ['imperial', 'metric'],
+      default: 'imperial'
+    }
   },
-  lastName: {
-    type: String,
-    trim: true
+
+  // User Stats (simplified)
+  stats: {
+    totalSearches: {
+      type: Number,
+      default: 0
+    }
   },
-  profilePicture: {
-    type: String,
-    default: null
+
+  // Subscription Info (matches your Redux)
+  subscription: {
+    plan: {
+      type: String,
+      enum: ['free', 'premium', 'enterprise'],
+      default: 'free'
+    },
+    status: {
+      type: String,
+      enum: ['active', 'inactive', 'cancelled', 'trial'],
+      default: 'active'
+    },
+    price: {
+      type: Number,
+      default: 0
+    },
+    nextBilling: {
+      type: Date,
+      default: null
+    },
+    trialEnds: {
+      type: Date,
+      default: null
+    }
   },
+
+  // System fields
   authProvider: {
     type: String,
     default: 'google',
@@ -45,57 +114,69 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   }
 }, {
-  timestamps: true, // This adds createdAt and updatedAt automatically
+  timestamps: true,
   toJSON: {
     transform: function(doc, ret) {
       delete ret.__v;
+      delete ret.googleId; // Don't expose this in API responses
       return ret;
     }
   }
 });
 
-// Index for faster queries
+// Indexes for performance
 userSchema.index({ email: 1 });
 userSchema.index({ googleId: 1 });
 
-// Method to update last login
+// Instance Methods
 userSchema.methods.updateLastLogin = function() {
   this.lastLogin = new Date();
   return this.save();
 };
 
-// Static method to find or create user from Google profile
+userSchema.methods.updateProfile = function(profileData) {
+  Object.assign(this.profile, profileData);
+  return this.save();
+};
+
+userSchema.methods.updatePreferences = function(preferencesData) {
+  Object.assign(this.preferences, preferencesData);
+  return this.save();
+};
+
+// Static Methods
 userSchema.statics.findOrCreate = async function(googleProfile) {
   try {
     let user = await this.findOne({ googleId: googleProfile.sub });
     
     if (!user) {
-      // Create new user
+      // Create new user with proper structure
       user = new this({
         googleId: googleProfile.sub,
         email: googleProfile.email,
-        name: googleProfile.name,
-        firstName: googleProfile.given_name,
-        lastName: googleProfile.family_name,
-        profilePicture: googleProfile.picture,
+        profile: {
+          name: googleProfile.name,
+          firstName: googleProfile.given_name,
+          lastName: googleProfile.family_name,
+          avatar: googleProfile.picture
+        },
         lastLogin: new Date()
       });
       
       await user.save();
     } else {
-      // Update existing user's last login and potentially other fields
+      // Update existing user
       user.lastLogin = new Date();
       
-      // Update profile picture if it has changed
-      if (googleProfile.picture && user.profilePicture !== googleProfile.picture) {
-        user.profilePicture = googleProfile.picture;
+      // Update profile if data has changed
+      if (googleProfile.picture && user.profile.avatar !== googleProfile.picture) {
+        user.profile.avatar = googleProfile.picture;
       }
       
-      // Update name if it has changed
-      if (googleProfile.name && user.name !== googleProfile.name) {
-        user.name = googleProfile.name;
-        user.firstName = googleProfile.given_name;
-        user.lastName = googleProfile.family_name;
+      if (googleProfile.name && user.profile.name !== googleProfile.name) {
+        user.profile.name = googleProfile.name;
+        user.profile.firstName = googleProfile.given_name;
+        user.profile.lastName = googleProfile.family_name;
       }
       
       await user.save();
